@@ -125,20 +125,26 @@ class ProduccionDao {
   Future<List<ProduccionLeche>> porAnimal(
     String animalId, {
     int ultimosDias = 60,
+
+    /// Dia desde el que se cuenta hacia atras. Por defecto, hoy.
+    /// Las pruebas pasan una fecha fija para no depender del reloj.
+    DateTime? hoy,
   }) async {
     final db = await _db;
 
-    // date('now', '-N days') calcula la fecha de corte dentro del motor.
-    // Calcularla en Dart y pasarla como parametro tambien funcionaria, pero
-    // asi la consulta queda autocontenida.
+    // La fecha de corte se calcula en Dart y no con date('now') de SQLite:
+    // 'now' esta en UTC, y en Ecuador desde las 19:00 ya seria el dia
+    // siguiente. aFecha usa la hora local, la misma que se guarda en `fecha`.
+    final corte = _corte(hoy, ultimosDias);
+
     final filas = await db.rawQuery('''
       SELECT *
       FROM produccion_leche
       WHERE animal_id = ?
         AND eliminado = 0
-        AND fecha >= date('now', '-' || ? || ' days')
+        AND fecha >= ?
       ORDER BY fecha DESC, ordenio DESC
-    ''', [animalId, ultimosDias]);
+    ''', [animalId, corte]);
 
     return filas.map(ProduccionLeche.desdeFila).toList();
   }
@@ -230,6 +236,9 @@ class ProduccionDao {
     /// normal (clima, cambio de pasto, estres de manejo) y saldrian falsas
     /// alarmas que ensenarian a ignorar la pantalla.
     double umbralPorcentaje = 15.0,
+
+    /// Dia de referencia. Por defecto, hoy. Ver [porAnimal].
+    DateTime? hoy,
   }) async {
     final db = await _db;
 
@@ -251,7 +260,7 @@ class ProduccionDao {
           AND p.eliminado = 0
           AND a.eliminado = 0
           AND a.activo = 1
-          AND p.fecha >= date('now', '-' || ? || ' days')
+          AND p.fecha >= ?
         GROUP BY p.animal_id, p.fecha
       ),
 
@@ -301,7 +310,7 @@ class ProduccionDao {
         AND ((b.promedio - d.litros_dia) / b.promedio) * 100.0 >= ?
 
       ORDER BY caida_pct DESC
-    ''', [fincaId, diasBase + 1, umbralPorcentaje]);
+    ''', [fincaId, _corte(hoy, diasBase + 1), umbralPorcentaje]);
 
     return filas.map((f) => CaidaProduccion(
       animalId: f['animal_id'] as String,
@@ -313,4 +322,8 @@ class ProduccionDao {
       caidaPorcentaje: (f['caida_pct'] as num).toDouble(),
     )).toList();
   }
+
+  /// Fecha 'AAAA-MM-DD' de [dias] dias antes de [hoy] (o de hoy si es null).
+  static String _corte(DateTime? hoy, int dias) =>
+      aFecha((hoy ?? DateTime.now()).subtract(Duration(days: dias)));
 }

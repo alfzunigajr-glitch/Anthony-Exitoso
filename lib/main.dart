@@ -143,13 +143,13 @@ class _PantallaConfiguracionState extends State<_PantallaConfiguracion> {
             children: [
               const SizedBox(height: Medida.xl),
 
-              Text('Registro del hato', style: Tipo.titulo),
+              const Text('Registro del hato', style: Tipo.titulo),
               const SizedBox(height: Medida.sm),
 
               // El texto explica para que sirve la app en una linea, en
               // lenguaje de la persona que la va a usar. Nada de "plataforma"
               // ni "solucion".
-              Text(
+              const Text(
                 'Lleva el historial de cada animal y avisa cuándo no se puede '
                 'entregar la leche.',
                 style: Tipo.cuerpoSuave,

@@ -34,7 +34,6 @@
 
 import 'package:flutter/material.dart';
 
-import '../core/fechas.dart';
 import '../core/tema.dart';
 import '../data/dao/animal_dao.dart';
 import '../data/dao/evento_salud_dao.dart';
@@ -335,7 +334,7 @@ class _PantallaEventoState extends State<PantallaEvento> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('¿Qué animal?', style: Tipo.subtitulo),
+        const Text('¿Qué animal?', style: Tipo.subtitulo),
         const SizedBox(height: Medida.sm),
 
         TextField(
@@ -379,7 +378,7 @@ class _PantallaEventoState extends State<PantallaEvento> {
                   children: [
                     Expanded(child: Text(a.etiqueta, style: Tipo.cuerpo)),
                     if (!a.activo)
-                      Text('fuera del hato', style: Tipo.apoyo),
+                      const Text('fuera del hato', style: Tipo.apoyo),
                   ],
                 ),
               ),
@@ -401,7 +400,7 @@ class _PantallaEventoState extends State<PantallaEvento> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('¿Qué le pasa?', style: Tipo.subtitulo),
+        const Text('¿Qué le pasa?', style: Tipo.subtitulo),
         const SizedBox(height: Medida.sm),
 
         // Wrap acomoda los botones en filas y salta de linea solo cuando hace
@@ -461,14 +460,14 @@ class _PantallaEventoState extends State<PantallaEvento> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('¿Cuándo empezó?', style: Tipo.subtitulo),
+        const Text('¿Cuándo empezó?', style: Tipo.subtitulo),
         const SizedBox(height: Medida.xs),
 
         // Este texto de apoyo es importante: autoriza explicitamente a no
         // saber. Sin el, la gente inventa una fecha para "quedar bien" con el
         // formulario, y entrenar con una fecha inventada es peor que no tener
         // el dato.
-        Text(
+        const Text(
           'Tu mejor estimación. Si no lo sabes, dilo: es mejor que adivinar.',
           style: Tipo.apoyo,
         ),
@@ -522,12 +521,12 @@ class _PantallaEventoState extends State<PantallaEvento> {
         SwitchListTile(
           value: _confirmado,
           onChanged: (v) => setState(() => _confirmado = v),
-          title: Text('Diagnóstico confirmado', style: Tipo.cuerpo),
-          subtitle: Text(
+          title: const Text('Diagnóstico confirmado', style: Tipo.cuerpo),
+          subtitle: const Text(
             'Actívalo solo si lo revisaste como veterinario',
             style: Tipo.apoyo,
           ),
-          activeColor: Colores.primario,
+          activeThumbColor: Colores.primario,
           contentPadding: EdgeInsets.zero,
         ),
 
@@ -535,7 +534,7 @@ class _PantallaEventoState extends State<PantallaEvento> {
         // dato no se va a usar y pedirlo seria un campo de mas.
         if (_confirmado) ...[
           const SizedBox(height: Medida.sm),
-          Text('Gravedad', style: Tipo.cuerpo),
+          const Text('Gravedad', style: Tipo.cuerpo),
           const SizedBox(height: Medida.sm),
           Row(
             children: [1, 2, 3].map((n) {

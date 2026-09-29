@@ -149,10 +149,8 @@ class Tratamiento {
     final hasta = retiroLecheHasta;
     if (hasta == null) return 0;
 
-    final restantes = hasta.difference(DateTime.now()).inDays;
-
-    // Si el periodo ya paso, difference da negativo. Se devuelve 0 para no
-    // mostrar "faltan -3 dias" en pantalla.
-    return restantes < 0 ? 0 : restantes;
+    // Dias de calendario, no bloques de 24 h: ver diasCalendarioHasta.
+    // Si el periodo ya paso devuelve 0, nunca "faltan -3 dias".
+    return diasCalendarioHasta(hasta);
   }
 }

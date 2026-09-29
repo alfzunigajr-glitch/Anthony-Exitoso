@@ -358,7 +358,7 @@ void main() {
       await produccionDao.guardar(
         animalId: v18.id, fecha: fecha, ordenio: 1, litros: 14.5);
 
-      final serie = await produccionDao.porAnimal(v18.id);
+      final serie = await produccionDao.porAnimal(v18.id, hoy: fechaBase);
 
       // Una sola fila con el valor corregido. Con INSERT a secas, la segunda
       // llamada habria fallado por la restriccion UNIQUE y el ordeniador no
@@ -390,7 +390,7 @@ void main() {
           animalId: v22.id, fecha: haceDias(d), ordenio: 2, litros: 10.0);
       }
 
-      final alertas = await produccionDao.detectarCaidas(fincaId: finca.id);
+      final alertas = await produccionDao.detectarCaidas(fincaId: finca.id, hoy: fechaBase);
 
       expect(alertas, hasLength(1));
       expect(alertas.first.animalId, equals(v18.id));
@@ -405,7 +405,7 @@ void main() {
       await produccionDao.guardar(
         animalId: v18.id, fecha: haceDias(1), ordenio: 1, litros: 5.0);
 
-      expect(await produccionDao.detectarCaidas(fincaId: finca.id), isEmpty);
+      expect(await produccionDao.detectarCaidas(fincaId: finca.id, hoy: fechaBase), isEmpty);
     });
 
     test('faltantes lista las vacas sin registrar en el ordenio', () async {

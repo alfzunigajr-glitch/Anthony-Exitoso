@@ -101,4 +101,19 @@ void main() {
       expect(desdeIso('no es una fecha'), isNull);
     });
   });
+
+  group('diasCalendarioHasta', () {
+    test('cuenta fechas, no bloques de 24 horas', () {
+      final desde = DateTime(2026, 6, 10, 12, 0);
+      // Termina en 1 dia y 23 horas: es pasado maniana, faltan 2 dias.
+      expect(diasCalendarioHasta(DateTime(2026, 6, 12, 11, 0), desde: desde), 2);
+      // Termina esta misma tarde: 0, que la pantalla muestra como "hoy".
+      expect(diasCalendarioHasta(DateTime(2026, 6, 10, 18, 0), desde: desde), 0);
+    });
+
+    test('nunca devuelve negativo', () {
+      final desde = DateTime(2026, 6, 10, 12, 0);
+      expect(diasCalendarioHasta(DateTime(2026, 6, 7), desde: desde), 0);
+    });
+  });
 }

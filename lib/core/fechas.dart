@@ -96,6 +96,24 @@ DateTime? desdeIso(String? texto) {
   return parseado?.toLocal();
 }
 
+/// Días de calendario que faltan hasta [hasta], contando desde hoy.
+///
+/// Se cuentan fechas, no bloques de 24 horas. `difference().inDays` trunca:
+/// un retiro que termina en 1 día y 23 horas daría "1 día", y el ordeñador
+/// entregaría leche con antibiótico un día antes. Con fechas de calendario,
+/// si termina pasado mañana dice 2, y si termina hoy dice 0 ("hoy").
+/// Nunca devuelve negativo.
+int diasCalendarioHasta(DateTime hasta, {DateTime? desde}) {
+  final a = (desde ?? DateTime.now()).toLocal();
+  final b = hasta.toLocal();
+  // Se comparan como fechas UTC a medianoche para que un cambio de horario
+  // (en otros países) no reste una hora y cambie el resultado.
+  final dias = DateTime.utc(b.year, b.month, b.day)
+      .difference(DateTime.utc(a.year, a.month, a.day))
+      .inDays;
+  return dias < 0 ? 0 : dias;
+}
+
 /// Rellena un número a dos dígitos: 7 -> '07'.
 /// Se marca con guion bajo al inicio para que sea privado del archivo:
 /// es un detalle interno y no debe usarse desde otras partes de la app.

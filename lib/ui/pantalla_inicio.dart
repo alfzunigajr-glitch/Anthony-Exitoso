@@ -233,7 +233,7 @@ class _PantallaInicioState extends State<PantallaInicio> {
             style: Tipo.subtitulo.copyWith(color: Colores.atencion),
           ),
           const SizedBox(height: Medida.xs),
-          Text(
+          const Text(
             'Comparado con su propio promedio de la última semana',
             style: Tipo.apoyo,
           ),
@@ -281,10 +281,10 @@ class _PantallaInicioState extends State<PantallaInicio> {
         color: Colores.primarioClaro,
         borderRadius: BorderRadius.circular(Medida.bordeRadio),
       ),
-      child: Row(
+      child: const Row(
         children: [
-          const Icon(Icons.check_circle_outline, color: Colores.primario),
-          const SizedBox(width: Medida.md),
+          Icon(Icons.check_circle_outline, color: Colores.primario),
+          SizedBox(width: Medida.md),
           Expanded(
             child: Text(
               'Toda la leche se puede entregar y nadie bajó de producción.',
@@ -300,7 +300,7 @@ class _PantallaInicioState extends State<PantallaInicio> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Datos para el algoritmo', style: Tipo.subtitulo),
+        const Text('Datos para el algoritmo', style: Tipo.subtitulo),
         const SizedBox(height: Medida.md),
 
         Row(
@@ -312,7 +312,7 @@ class _PantallaInicioState extends State<PantallaInicio> {
                 children: [
                   Text('$_etiquetasUtiles', style: Tipo.cifra),
                   const SizedBox(height: Medida.xs),
-                  Text('casos completos', style: Tipo.apoyo),
+                  const Text('casos completos', style: Tipo.apoyo),
                 ],
               ),
             ),
@@ -327,7 +327,7 @@ class _PantallaInicioState extends State<PantallaInicio> {
                       style: Tipo.cifra.copyWith(color: Colores.atencion),
                     ),
                     const SizedBox(height: Medida.xs),
-                    Text('por completar', style: Tipo.apoyo),
+                    const Text('por completar', style: Tipo.apoyo),
                   ],
                 ),
               ),

@@ -204,7 +204,6 @@ class TratamientoDao {
       final textoUtc = (f['retiro_hasta'] as String).replaceFirst(' ', 'T');
       final hasta = DateTime.parse('${textoUtc}Z').toLocal();
 
-      final restantes = hasta.difference(ahoraFecha).inDays;
 
       final arete = f['arete_interno'] as String?;
       final nombre = f['nombre'] as String?;
@@ -219,7 +218,7 @@ class TratamientoDao {
         farmaco: f['farmaco'] as String,
         aplicadoEn: desdeIso(f['ts_aplicacion'] as String)!,
         retiroHasta: hasta,
-        diasRestantes: restantes < 0 ? 0 : restantes,
+        diasRestantes: diasCalendarioHasta(hasta, desde: ahoraFecha),
       );
     }).toList();
   }
@@ -260,15 +259,13 @@ class TratamientoDao {
     final f = filas.first;
     final textoUtc = (f['retiro_hasta'] as String).replaceFirst(' ', 'T');
     final hasta = DateTime.parse('${textoUtc}Z').toLocal();
-    final restantes = hasta.difference(DateTime.now()).inDays;
-
     return AnimalEnRetiro(
       animalId: f['animal_id'] as String,
       etiquetaAnimal: (f['arete_interno'] as String?) ?? (f['nombre'] as String?) ?? '—',
       farmaco: f['farmaco'] as String,
       aplicadoEn: desdeIso(f['ts_aplicacion'] as String)!,
       retiroHasta: hasta,
-      diasRestantes: restantes < 0 ? 0 : restantes,
+      diasRestantes: diasCalendarioHasta(hasta),
     );
   }
 
