@@ -13,6 +13,11 @@ dependencies:
   flutter:
     sdk: flutter
 
+  # Traducciones de los componentes de Material (calendario, botones de los
+  # dialogos). Sin esto el selector de fecha aparece en ingles.
+  flutter_localizations:
+    sdk: flutter
+
   # ---- Base de datos -------------------------------------------------------
   # sqflite: SQLite para Android e iOS. Es el motor real, no una emulación.
   sqflite: ^2.3.3
@@ -33,7 +38,7 @@ dependencies:
   # OJO: intl es SOLO para mostrar. Para guardar se usa lib/core/fechas.dart,
   # que produce el ISO-8601 con offset que espera el esquema. Mezclarlos
   # llenaría la base de formatos distintos en la misma columna.
-  intl: ^0.19.0
+  intl: ^0.20.2
 
 dev_dependencies:
   flutter_test:

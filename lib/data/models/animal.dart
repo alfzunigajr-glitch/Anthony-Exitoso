@@ -32,6 +32,55 @@ class CategoriaAnimal {
   static const todas = [
     ternera, vacona, vaquilla, vacaLactancia, vacaSeca, toro, torete,
   ];
+
+  /// Categorias posibles para cada sexo. El formulario de alta muestra solo
+  /// estas: elegir primero el sexo deja cinco o dos opciones en vez de siete,
+  /// y hace imposible guardar un "toro" marcado como hembra.
+  static List<String> paraSexo(String sexo) => sexo == Sexo.macho
+      ? const [torete, toro]
+      : const [ternera, vacona, vaquilla, vacaLactancia, vacaSeca];
+
+  /// Nombre legible para la interfaz.
+  static String etiqueta(String codigo) {
+    switch (codigo) {
+      case ternera:       return 'Ternera';
+      case vacona:        return 'Vacona';
+      case vaquilla:      return 'Vaquilla';
+      case vacaLactancia: return 'Vaca en ordeño';
+      case vacaSeca:      return 'Vaca seca';
+      case toro:          return 'Toro';
+      case torete:        return 'Torete';
+      default:            return codigo;
+    }
+  }
+}
+
+/// Valores de la columna `sexo`.
+class Sexo {
+  static const hembra = 'H';
+  static const macho  = 'M';
+}
+
+/// Razas que espera la columna `raza` (ver comentario en v1_esquema.sql).
+class Raza {
+  static const holstein   = 'HOLSTEIN';
+  static const jersey     = 'JERSEY';
+  static const brownSwiss = 'BROWN_SWISS';
+  static const criollo    = 'CRIOLLO';
+  static const mestizo    = 'MESTIZO';
+
+  static const todas = [holstein, jersey, brownSwiss, criollo, mestizo];
+
+  static String etiqueta(String codigo) {
+    switch (codigo) {
+      case holstein:   return 'Holstein';
+      case jersey:     return 'Jersey';
+      case brownSwiss: return 'Brown Swiss';
+      case criollo:    return 'Criollo';
+      case mestizo:    return 'Mestizo';
+      default:         return codigo;
+    }
+  }
 }
 
 class Animal {

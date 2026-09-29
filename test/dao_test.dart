@@ -104,6 +104,37 @@ void main() {
       expect(await animalDao.buscar(finca.id, 'lucera'), hasLength(1));
       expect(await animalDao.buscar(finca.id, 'inexistente'), isEmpty);
     });
+
+    test('crear con un arete repetido lanza AreteRepetido', () async {
+      // La pantalla de alta depende de esta excepcion para explicar el error
+      // junto al campo. Si llegara la DatabaseException cruda, la app
+      // mostraria un error tecnico o se cerraria.
+      expect(
+        () => animalDao.crear(
+          fincaId: finca.id,
+          sexo: Sexo.hembra,
+          categoria: CategoriaAnimal.vacaSeca,
+          fechaIngreso: haceDias(1),
+          areteInterno: 'V-18',
+        ),
+        throwsA(isA<AreteRepetido>()
+            .having((e) => e.arete, 'arete', equals('V-18'))),
+      );
+    });
+
+    test('el mismo arete en otra finca si se acepta', () async {
+      final otra = await fincaDao.crear(nombre: 'Otra finca');
+
+      final animal = await animalDao.crear(
+        fincaId: otra.id,
+        sexo: Sexo.hembra,
+        categoria: CategoriaAnimal.vacaSeca,
+        fechaIngreso: haceDias(1),
+        areteInterno: 'V-18',
+      );
+
+      expect(animal.areteInterno, equals('V-18'));
+    });
   });
 
   // ===========================================================================

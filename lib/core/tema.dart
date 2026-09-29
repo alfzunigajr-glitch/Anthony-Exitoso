@@ -194,6 +194,16 @@ ThemeData construirTema() {
       ),
     ),
 
+    // Botones de texto ("Cambiar", "Hato", "Ver todos"). Material los trae
+    // con letra de 14 y 40 px de alto: por debajo del minimo de esta app.
+    textButtonTheme: TextButtonThemeData(
+      style: TextButton.styleFrom(
+        foregroundColor: Colores.primario,
+        minimumSize: const Size(Medida.toque, Medida.toque),
+        textStyle: Tipo.cuerpo.copyWith(fontWeight: FontWeight.w600),
+      ),
+    ),
+
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
       fillColor: Colores.superficieAlta,

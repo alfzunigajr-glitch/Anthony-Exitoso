@@ -23,12 +23,14 @@
 import 'package:flutter/material.dart';
 
 import '../core/tema.dart';
+import '../data/dao/animal_dao.dart';
 import '../data/dao/evento_salud_dao.dart';
 import '../data/dao/produccion_dao.dart';
 import '../data/dao/tratamiento_dao.dart';
 import '../data/models/finca.dart';
 import '../data/models/produccion_leche.dart';
 import 'pantalla_evento.dart';
+import 'pantalla_hato.dart';
 
 class PantallaInicio extends StatefulWidget {
   final Finca finca;
@@ -43,11 +45,13 @@ class _PantallaInicioState extends State<PantallaInicio> {
   final _tratamientoDao = TratamientoDao();
   final _produccionDao = ProduccionDao();
   final _saludDao = EventoSaludDao();
+  final _animalDao = AnimalDao();
 
   List<AnimalEnRetiro> _enRetiro = [];
   List<CaidaProduccion> _caidas = [];
   int _etiquetasUtiles = 0;
   int _porCompletar = 0;
+  int _animales = 0;
   bool _cargando = true;
 
   @override
@@ -65,6 +69,7 @@ class _PantallaInicioState extends State<PantallaInicio> {
       _produccionDao.detectarCaidas(fincaId: widget.finca.id),
       _saludDao.totalEtiquetasUtiles(),
       _saludDao.incompletos(widget.finca.id),
+      _animalDao.contarActivos(widget.finca.id),
     ]);
 
     if (!mounted) return;
@@ -76,6 +81,7 @@ class _PantallaInicioState extends State<PantallaInicio> {
       _caidas = resultados[1] as List<CaidaProduccion>;
       _etiquetasUtiles = resultados[2] as int;
       _porCompletar = (resultados[3] as List).length;
+      _animales = resultados[4] as int;
       _cargando = false;
     });
   }
@@ -92,10 +98,31 @@ class _PantallaInicioState extends State<PantallaInicio> {
     if (huboCambios == true) _cargar();
   }
 
+  Future<void> _abrirHato() async {
+    final huboCambios = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(
+        builder: (_) => PantallaHato(fincaId: widget.finca.id),
+      ),
+    );
+    if (huboCambios == true) _cargar();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(widget.finca.nombre)),
+      appBar: AppBar(
+        title: Text(widget.finca.nombre),
+        actions: [
+          // Con texto y no solo icono: un icono de lista no dice "mis vacas"
+          // a quien no usa apps a diario.
+          TextButton.icon(
+            onPressed: _abrirHato,
+            icon: const Icon(Icons.format_list_bulleted),
+            label: Text(_animales > 0 ? 'Hato · $_animales' : 'Hato'),
+          ),
+          const SizedBox(width: Medida.sm),
+        ],
+      ),
 
       body: _cargando
           ? const Center(child: CircularProgressIndicator())
@@ -107,6 +134,13 @@ class _PantallaInicioState extends State<PantallaInicio> {
               child: ListView(
                 padding: const EdgeInsets.all(Medida.md),
                 children: [
+                  // Sin animales no se puede registrar nada: es lo primero
+                  // que hay que resolver, asi que va antes que todo.
+                  if (_animales == 0) ...[
+                    _bloqueHatoVacio(),
+                    const SizedBox(height: Medida.lg),
+                  ],
+
                   if (_enRetiro.isNotEmpty) ...[
                     _bloqueRetiro(),
                     const SizedBox(height: Medida.lg),
@@ -120,7 +154,7 @@ class _PantallaInicioState extends State<PantallaInicio> {
                   // Estado vacio: cuando no hay nada urgente, la pantalla no
                   // debe quedar en blanco ni disculparse. Confirma que todo
                   // esta en orden, que es informacion util.
-                  if (_enRetiro.isEmpty && _caidas.isEmpty) ...[
+                  if (_animales > 0 && _enRetiro.isEmpty && _caidas.isEmpty) ...[
                     _bloqueTodoEnOrden(),
                     const SizedBox(height: Medida.lg),
                   ],
@@ -269,6 +303,34 @@ class _PantallaInicioState extends State<PantallaInicio> {
                   ],
                 ),
               )),
+        ],
+      ),
+    );
+  }
+
+  Widget _bloqueHatoVacio() {
+    return Container(
+      padding: const EdgeInsets.all(Medida.md),
+      decoration: BoxDecoration(
+        color: Colores.atencionClaro,
+        borderRadius: BorderRadius.circular(Medida.bordeRadio),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('Primero, carga tu hato', style: Tipo.subtitulo),
+          const SizedBox(height: Medida.xs),
+          const Text(
+            'Para registrar un caso hay que elegir el animal. Agrega tus '
+            'vacas una vez; se puede cargar varias seguidas.',
+            style: Tipo.cuerpoSuave,
+          ),
+          const SizedBox(height: Medida.md),
+          OutlinedButton.icon(
+            onPressed: _abrirHato,
+            icon: const Icon(Icons.add),
+            label: const Text('Agregar animales'),
+          ),
         ],
       ),
     );

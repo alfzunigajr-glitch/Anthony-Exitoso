@@ -19,6 +19,16 @@ import '../../core/fechas.dart';
 import '../db/app_database.dart';
 import '../models/animal.dart';
 
+/// Se lanza al dar de alta un animal con un arete interno que ya existe en la
+/// finca. Lo detecta la restricción UNIQUE(finca_id, arete_interno).
+class AreteRepetido implements Exception {
+  final String arete;
+  const AreteRepetido(this.arete);
+
+  @override
+  String toString() => 'AreteRepetido: $arete';
+}
+
 class AnimalDao {
   // Generador de UUID v4. Es `static` porque una sola instancia sirve para
   // toda la app; crear una nueva en cada llamada sería desperdicio.
@@ -174,16 +184,26 @@ class AnimalDao {
       creadoPor: creadoPor,
     );
 
-    await db.insert(
-      'animal',
-      animal.aFila(),
+    try {
+      await db.insert(
+        'animal',
+        animal.aFila(),
 
-      // abort = si la inserción viola una restricción, se lanza excepción.
-      // Es lo que queremos: el esquema tiene UNIQUE(finca_id, arete_interno),
-      // así que un arete repetido debe avisar al usuario, no guardarse callado.
-      // Las otras opciones (replace, ignore) esconderían el problema.
-      conflictAlgorithm: ConflictAlgorithm.abort,
-    );
+        // abort = si la inserción viola una restricción, se lanza excepción.
+        // Es lo que queremos: el esquema tiene UNIQUE(finca_id, arete_interno),
+        // así que un arete repetido debe avisar al usuario, no guardarse callado.
+        // Las otras opciones (replace, ignore) esconderían el problema.
+        conflictAlgorithm: ConflictAlgorithm.abort,
+      );
+    } on DatabaseException catch (e) {
+      // Se traduce a una excepcion propia para que la pantalla no tenga que
+      // conocer sqflite ni interpretar mensajes de SQLite: solo sabe que el
+      // arete esta repetido y lo dice en su idioma.
+      if (e.isUniqueConstraintError()) {
+        throw AreteRepetido(areteInterno ?? '');
+      }
+      rethrow;
+    }
 
     return animal;
   }

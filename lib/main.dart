@@ -7,6 +7,7 @@
 // =============================================================================
 
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'core/tema.dart';
 import 'data/models/finca.dart';
@@ -33,6 +34,16 @@ class AppGanado extends StatelessWidget {
       // Oculta la cinta roja de "DEBUG" en la esquina. En el telefono de Jhon
       // solo genera dudas sobre si la app esta terminada.
       debugShowCheckedModeBanner: false,
+
+      // Toda la app en espaniol, incluidos el calendario y los dialogos que
+      // dibuja Material por su cuenta.
+      locale: const Locale('es'),
+      supportedLocales: const [Locale('es')],
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
 
       home: const _Arranque(),
     );
