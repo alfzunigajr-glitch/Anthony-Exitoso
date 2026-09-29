@@ -1,0 +1,56 @@
+name: app_ganado
+description: Instrumento de registro para el proyecto de monitoreo ganadero
+publish_to: 'none'
+version: 0.1.0+1
+
+environment:
+  # El SDK mínimo. 3.0.0 en adelante trae null safety obligatorio, que es lo
+  # que hace que String? y String sean tipos distintos y que el compilador
+  # detecte los nulos antes de que la app llegue al teléfono.
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # ---- Base de datos -------------------------------------------------------
+  # sqflite: SQLite para Android e iOS. Es el motor real, no una emulación.
+  sqflite: ^2.3.3
+
+  # path: arma rutas de archivo con el separador correcto de cada sistema.
+  # Concatenar rutas con '+' funciona hasta que deja de funcionar.
+  path: ^1.9.0
+
+  # ---- Identificadores -----------------------------------------------------
+  # uuid: genera los identificadores v4.
+  # Van UUID y no enteros autoincrementales porque cuando dos teléfonos
+  # registren a la vez (Anthony y Jhon), los enteros chocarían y la
+  # sincronización quedaría imposible de arreglar.
+  uuid: ^4.4.0
+
+  # ---- Formato -------------------------------------------------------------
+  # intl: fechas legibles en español para la interfaz.
+  # OJO: intl es SOLO para mostrar. Para guardar se usa lib/core/fechas.dart,
+  # que produce el ISO-8601 con offset que espera el esquema. Mezclarlos
+  # llenaría la base de formatos distintos en la misma columna.
+  intl: ^0.19.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  # sqflite_common_ffi: permite correr SQLite en el computador, fuera del
+  # teléfono. Sirve para probar el esquema y los DAO sin emulador, que es
+  # mucho más rápido al iterar.
+  sqflite_common_ffi: ^2.3.3
+
+  flutter_lints: ^4.0.0
+
+flutter:
+  uses-material-design: true
+
+  # Los archivos .sql se empaquetan dentro del APK.
+  # Sin esta sección, rootBundle.loadString() falla en tiempo de ejecución con
+  # un error poco claro y la app no arranca.
+  assets:
+    - assets/sql/
