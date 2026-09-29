@@ -29,8 +29,12 @@ import '../data/dao/produccion_dao.dart';
 import '../data/dao/tratamiento_dao.dart';
 import '../data/models/finca.dart';
 import '../data/models/produccion_leche.dart';
+import 'comunes.dart';
+import 'pantalla_animal.dart';
 import 'pantalla_evento.dart';
 import 'pantalla_hato.dart';
+import 'pantalla_por_completar.dart';
+import 'pantalla_produccion.dart';
 
 class PantallaInicio extends StatefulWidget {
   final Finca finca;
@@ -98,13 +102,22 @@ class _PantallaInicioState extends State<PantallaInicio> {
     if (huboCambios == true) _cargar();
   }
 
-  Future<void> _abrirHato() async {
+  /// Abre una pantalla y recarga el inicio si alli se guardo algo.
+  Future<void> _abrir(Widget pantalla) async {
     final huboCambios = await Navigator.of(context).push<bool>(
-      MaterialPageRoute(
-        builder: (_) => PantallaHato(fincaId: widget.finca.id),
-      ),
+      MaterialPageRoute(builder: (_) => pantalla),
     );
     if (huboCambios == true) _cargar();
+  }
+
+  Future<void> _abrirHato() => _abrir(PantallaHato(fincaId: widget.finca.id));
+
+  /// Abre la ficha de un animal de las alertas. Se busca por id porque las
+  /// alertas traen solo el id y la etiqueta, no el animal completo.
+  Future<void> _abrirAnimal(String animalId) async {
+    final animal = await _animalDao.porId(animalId);
+    if (animal == null || !mounted) return;
+    await _abrir(PantallaAnimal(animal: animal));
   }
 
   @override
@@ -167,20 +180,33 @@ class _PantallaInicioState extends State<PantallaInicio> {
 
       // El boton de registrar vive abajo y siempre visible. Es la accion que
       // sostiene todo el proyecto: no puede estar escondida tras un menu.
-      bottomNavigationBar: Container(
-        padding: const EdgeInsets.all(Medida.md),
-        decoration: const BoxDecoration(
-          color: Colores.superficieAlta,
-          border: Border(top: BorderSide(color: Colores.borde)),
-        ),
-        child: SafeArea(
-          top: false,
-          child: ElevatedButton.icon(
-            onPressed: _registrarCaso,
-            icon: const Icon(Icons.add),
-            label: const Text('Registrar un caso'),
+      //
+      // El ordenio va al lado, mas chico: se registra dos veces al dia, todos
+      // los dias, y tenerlo a un toque es lo que hace que no se salte.
+      bottomNavigationBar: BarraInferior(
+        hijos: [
+          Row(
+            children: [
+              Expanded(
+                flex: 2,
+                child: OutlinedButton(
+                  onPressed: () =>
+                      _abrir(PantallaProduccion(fincaId: widget.finca.id)),
+                  child: const Text('Ordeño'),
+                ),
+              ),
+              const SizedBox(width: Medida.sm),
+              Expanded(
+                flex: 3,
+                child: ElevatedButton.icon(
+                  onPressed: _registrarCaso,
+                  icon: const Icon(Icons.add),
+                  label: const Text('Registrar caso'),
+                ),
+              ),
+            ],
           ),
-        ),
+        ],
       ),
     );
   }
@@ -215,7 +241,12 @@ class _PantallaInicioState extends State<PantallaInicio> {
           ),
           const SizedBox(height: Medida.md),
 
-          ..._enRetiro.map((a) => Padding(
+
+          // Tocar una fila abre la ficha: ahi esta el caso y el tratamiento.
+          ..._enRetiro.map((a) => InkWell(
+              onTap: () => _abrirAnimal(a.animalId),
+              child: Container(
+                constraints: const BoxConstraints(minHeight: Medida.toque),
                 padding: const EdgeInsets.only(bottom: Medida.sm),
                 child: Row(
                   children: [
@@ -243,7 +274,7 @@ class _PantallaInicioState extends State<PantallaInicio> {
                     ),
                   ],
                 ),
-              )),
+              ))),
         ],
       ),
     );
@@ -273,7 +304,10 @@ class _PantallaInicioState extends State<PantallaInicio> {
           ),
           const SizedBox(height: Medida.md),
 
-          ..._caidas.map((c) => Padding(
+          ..._caidas.map((c) => InkWell(
+              onTap: () => _abrirAnimal(c.animalId),
+              child: Container(
+                constraints: const BoxConstraints(minHeight: Medida.toque),
                 padding: const EdgeInsets.only(bottom: Medida.sm),
                 child: Row(
                   children: [
@@ -302,7 +336,7 @@ class _PantallaInicioState extends State<PantallaInicio> {
                     ),
                   ],
                 ),
-              )),
+              ))),
         ],
       ),
     );
@@ -381,16 +415,26 @@ class _PantallaInicioState extends State<PantallaInicio> {
 
             if (_porCompletar > 0)
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '$_porCompletar',
-                      style: Tipo.cifra.copyWith(color: Colores.atencion),
-                    ),
-                    const SizedBox(height: Medida.xs),
-                    const Text('por completar', style: Tipo.apoyo),
-                  ],
+                // Tocable: la lista de casos a completar es el siguiente paso
+                // natural despues de ver el numero.
+                child: InkWell(
+                  onTap: () =>
+                      _abrir(PantallaPorCompletar(fincaId: widget.finca.id)),
+                  borderRadius: BorderRadius.circular(Medida.bordeRadio),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '$_porCompletar',
+                        style: Tipo.cifra.copyWith(color: Colores.atencion),
+                      ),
+                      const SizedBox(height: Medida.xs),
+                      Text(
+                        'por completar ›',
+                        style: Tipo.apoyo.copyWith(color: Colores.atencion),
+                      ),
+                    ],
+                  ),
                 ),
               ),
           ],

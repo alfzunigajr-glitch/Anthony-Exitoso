@@ -185,6 +185,57 @@ class EventoSaludDao {
     );
   }
 
+  /// Completa un caso guardado a medias: fecha de inicio, confirmacion y
+  /// gravedad. Es lo que hace la pantalla "Por completar".
+  ///
+  /// LO QUE NO TOCA, A PROPOSITO: ts_deteccion_humana y ts_registro (regla 6
+  /// de CLAUDE.md). Completar un caso cambia lo que se sabe de cuando empezo,
+  /// no cuando alguien lo noto ni cuando se digito.
+  ///
+  /// El metodo pasa a CLINICO al confirmar y vuelve a PRESUNTIVO al quitar la
+  /// confirmacion, igual que al crear el caso desde pantalla_evento.
+  Future<void> completar({
+    required String eventoId,
+    required DateTime? tsInicioEstimado,
+    required String precisionTsInicio,
+    required bool confirmado,
+    int? severidad,
+  }) async {
+    final db = await _db;
+
+    await db.update(
+      'evento_salud',
+      {
+        'ts_inicio_estimado':
+            tsInicioEstimado == null ? null : aIso(tsInicioEstimado),
+        'precision_ts_inicio': precisionTsInicio,
+        'confirmado': confirmado ? 1 : 0,
+        'metodo_diagnostico': confirmado
+            ? MetodoDiagnostico.clinico
+            : MetodoDiagnostico.presuntivo,
+        // Sin confirmacion la gravedad no se pide, asi que se limpia para no
+        // dejar un valor viejo que ya nadie ve.
+        'severidad': confirmado ? severidad : null,
+        'modificado_en': ahora(),
+      },
+      where: 'id = ?',
+      whereArgs: [eventoId],
+    );
+  }
+
+  /// Un evento por su id. Devuelve null si no existe o esta eliminado.
+  Future<EventoSalud?> porId(String id) async {
+    final db = await _db;
+    final filas = await db.query(
+      'evento_salud',
+      where: 'id = ? AND eliminado = 0',
+      whereArgs: [id],
+      limit: 1,
+    );
+    if (filas.isEmpty) return null;
+    return EventoSalud.desdeFila(filas.first);
+  }
+
   /// Cierra el episodio.
   Future<void> resolver({
     required String eventoId,

@@ -40,43 +40,7 @@ import '../data/dao/evento_salud_dao.dart';
 import '../data/models/animal.dart';
 import '../data/models/diagnostico.dart';
 import '../data/models/evento_salud.dart';
-
-/// Opcion de "cuando empezo".
-///
-/// Cada opcion traduce lenguaje de campo a los dos campos que el esquema
-/// necesita. Es el puente entre como piensa una persona y como guarda la base.
-class _MomentoInicio {
-  final String etiqueta;
-
-  /// Cuantas horas atras se sitúa el inicio.
-  final int horasAtras;
-
-  /// Precision que implica esa respuesta.
-  final String precision;
-
-  const _MomentoInicio(this.etiqueta, this.horasAtras, this.precision);
-
-  /// Las opciones, de mas reciente a mas antigua.
-  ///
-  /// "Ahora mismo" da precision EXACTO porque el usuario lo esta viendo.
-  /// "Ayer" da +-1 dia, que sigue sirviendo para entrenar.
-  /// "Hace varios dias" da +-3 dias: se guarda, pero la vista de entrenamiento
-  /// lo excluye. Es honesto y mejor que inventar una hora.
-  static const opciones = [
-    _MomentoInicio('Ahora mismo', 0, PrecisionTs.exacto),
-    _MomentoInicio('Esta mañana', 6, PrecisionTs.masMenos6h),
-    _MomentoInicio('Ayer', 24, PrecisionTs.masMenos1d),
-    _MomentoInicio('Hace 2 o 3 días', 60, PrecisionTs.masMenos3d),
-    _MomentoInicio('No lo sé', -1, PrecisionTs.desconocido),
-  ];
-
-  /// Calcula la fecha real. Devuelve null para "No lo sé": esa columna admite
-  /// null y es preferible a guardar una fecha falsa.
-  DateTime? calcularFecha() {
-    if (horasAtras < 0) return null;
-    return DateTime.now().subtract(Duration(hours: horasAtras));
-  }
-}
+import 'comunes.dart';
 
 class PantallaEvento extends StatefulWidget {
   final String fincaId;
@@ -106,7 +70,7 @@ class _PantallaEventoState extends State<PantallaEvento> {
   // ---- Estado del formulario -----------------------------------------------
   Animal? _animal;
   String? _codigoDiagnostico;
-  _MomentoInicio? _momento;
+  MomentoInicio? _momento;
   bool _confirmado = false;
   int? _severidad;
   final _notas = TextEditingController();
@@ -403,46 +367,16 @@ class _PantallaEventoState extends State<PantallaEvento> {
         const Text('¿Qué le pasa?', style: Tipo.subtitulo),
         const SizedBox(height: Medida.sm),
 
-        // Wrap acomoda los botones en filas y salta de linea solo cuando hace
-        // falta. Se adapta a cualquier ancho de pantalla sin calculos.
-        Wrap(
-          spacing: Medida.sm,
-          runSpacing: Medida.sm,
-          children: mostrados.map((d) {
-            final elegido = _codigoDiagnostico == d.codigo;
-
-            return InkWell(
-              onTap: () => setState(() => _codigoDiagnostico = d.codigo),
-              borderRadius: BorderRadius.circular(Medida.bordeRadio),
-              child: Container(
-                // Ancho fijo en dos columnas: se calcula restando el padding
-                // de la pantalla y el espacio entre botones.
-                width: (MediaQuery.of(context).size.width -
-                        Medida.md * 2 -
-                        Medida.sm) /
-                    2,
-                height: Medida.toqueGrande,
-                padding: const EdgeInsets.all(Medida.sm),
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  color: elegido ? Colores.primario : Colores.superficieAlta,
-                  borderRadius: BorderRadius.circular(Medida.bordeRadio),
-                  border: Border.all(
-                    color: elegido ? Colores.primario : Colores.borde,
-                    width: elegido ? 2 : 1,
-                  ),
-                ),
-                child: Text(
-                  d.nombre,
-                  textAlign: TextAlign.center,
-                  style: Tipo.cuerpo.copyWith(
-                    color: elegido ? Colors.white : Colores.tinta,
-                    fontWeight: elegido ? FontWeight.w600 : FontWeight.w400,
-                  ),
-                ),
-              ),
-            );
-          }).toList(),
+        // Dos columnas de botones altos: los nombres de diagnostico a veces
+        // ocupan dos lineas ("Retencion de placenta").
+        GrillaOpciones<Diagnostico>(
+          valores: mostrados,
+          elegido: mostrados
+              .where((d) => d.codigo == _codigoDiagnostico)
+              .firstOrNull,
+          etiqueta: (d) => d.nombre,
+          alto: Medida.toqueGrande,
+          onElegir: (d) => setState(() => _codigoDiagnostico = d.codigo),
         ),
 
         if (!_mostrarCatalogoCompleto) ...[
@@ -473,41 +407,10 @@ class _PantallaEventoState extends State<PantallaEvento> {
         ),
         const SizedBox(height: Medida.sm),
 
-        ..._MomentoInicio.opciones.map((m) {
-          final elegido = _momento == m;
-
-          return Padding(
-            padding: const EdgeInsets.only(bottom: Medida.sm),
-            child: InkWell(
-              onTap: () => setState(() => _momento = m),
-              borderRadius: BorderRadius.circular(Medida.bordeRadio),
-              child: Container(
-                height: Medida.toque,
-                padding: const EdgeInsets.symmetric(horizontal: Medida.md),
-                decoration: BoxDecoration(
-                  color: elegido ? Colores.primarioClaro : Colores.superficieAlta,
-                  borderRadius: BorderRadius.circular(Medida.bordeRadio),
-                  border: Border.all(
-                    color: elegido ? Colores.primario : Colores.borde,
-                    width: elegido ? 2 : 1,
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    Icon(
-                      elegido
-                          ? Icons.radio_button_checked
-                          : Icons.radio_button_unchecked,
-                      color: elegido ? Colores.primario : Colores.tintaSuave,
-                    ),
-                    const SizedBox(width: Medida.md),
-                    Text(m.etiqueta, style: Tipo.cuerpo),
-                  ],
-                ),
-              ),
-            ),
-          );
-        }),
+        SelectorMomento(
+          elegido: _momento,
+          onElegir: (m) => setState(() => _momento = m),
+        ),
       ],
     );
   }

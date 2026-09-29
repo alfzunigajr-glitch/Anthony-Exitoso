@@ -9,6 +9,7 @@
 
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:app_ganado/core/fechas.dart';
 import 'package:app_ganado/data/dao/animal_dao.dart';
 import 'package:app_ganado/data/dao/evento_reproductivo_dao.dart';
 import 'package:app_ganado/data/dao/evento_salud_dao.dart';
@@ -249,6 +250,56 @@ void main() {
       expect(pendientes, hasLength(1));
       expect(pendientes.first.animalId, equals(v22.id));
     });
+
+    test('completar lo saca de incompletos sin tocar deteccion ni registro',
+        () async {
+      final caso = await saludDao.crear(
+        animalId: v22.id,
+        diagnosticoCodigo: 'COJERA',
+        tsDeteccionHumana: haceDias(4),
+        metodoDiagnostico: MetodoDiagnostico.presuntivo,
+      );
+
+      await saludDao.completar(
+        eventoId: caso.id,
+        tsInicioEstimado: haceDias(5),
+        precisionTsInicio: PrecisionTs.masMenos1d,
+        confirmado: true,
+        severidad: 2,
+      );
+
+      final completo = (await saludDao.porId(caso.id))!;
+      expect(completo.sirveParaEntrenar, isTrue);
+      expect(completo.metodoDiagnostico, equals(MetodoDiagnostico.clinico));
+      expect(await saludDao.incompletos(finca.id), isEmpty);
+
+      // Regla 6 de CLAUDE.md: completar cambia lo que se sabe del inicio, no
+      // cuando alguien lo noto ni cuando se digito.
+      expect(completo.tsDeteccionHumana, equals(caso.tsDeteccionHumana));
+      expect(aIso(completo.tsRegistro), equals(aIso(caso.tsRegistro)));
+    });
+
+    test('completar sin confirmar lo deja pendiente y sin gravedad', () async {
+      final caso = await saludDao.crear(
+        animalId: v22.id,
+        diagnosticoCodigo: 'COJERA',
+        tsDeteccionHumana: haceDias(4),
+        metodoDiagnostico: MetodoDiagnostico.presuntivo,
+      );
+
+      await saludDao.completar(
+        eventoId: caso.id,
+        tsInicioEstimado: haceDias(4),
+        precisionTsInicio: PrecisionTs.exacto,
+        confirmado: false,
+        severidad: 3,
+      );
+
+      final sigue = (await saludDao.porId(caso.id))!;
+      expect(sigue.sirveParaEntrenar, isFalse);
+      expect(sigue.severidad, isNull);
+      expect(await saludDao.incompletos(finca.id), hasLength(1));
+    });
   });
 
   // ===========================================================================
@@ -452,6 +503,22 @@ void main() {
       // el registro se complete en vez de quedar a medias.
       expect(pendientes, hasLength(1));
       expect(pendientes.first, equals(v22.id));
+    });
+
+    test('delOrdenio devuelve solo ese dia y ese ordenio', () async {
+      final hoy = haceDias(0);
+      await produccionDao.guardar(
+        animalId: v18.id, fecha: hoy, ordenio: 1, litros: 15.5);
+      // Otro ordenio y otro dia: no deben aparecer.
+      await produccionDao.guardar(
+        animalId: v22.id, fecha: hoy, ordenio: 2, litros: 9.0);
+      await produccionDao.guardar(
+        animalId: v22.id, fecha: haceDias(1), ordenio: 1, litros: 8.0);
+
+      final anotado = await produccionDao.delOrdenio(
+        fincaId: finca.id, fecha: hoy, ordenio: 1);
+
+      expect(anotado, equals({v18.id: 15.5}));
     });
   });
 }

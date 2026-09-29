@@ -12,8 +12,7 @@
 //     se busca tambien entre los que ya salieron (buscar), marcados como
 //     "fuera del hato": a veces hay que registrar algo de un animal vendido.
 //
-//  Tocar un animal abre el registro de un caso con ese animal ya elegido.
-//  Cuando exista la ficha del animal (T3), la fila abrira la ficha.
+//  Tocar un animal abre su ficha (pantalla_animal).
 // =============================================================================
 
 import 'package:flutter/material.dart';
@@ -22,7 +21,7 @@ import '../core/tema.dart';
 import '../data/dao/animal_dao.dart';
 import '../data/models/animal.dart';
 import 'pantalla_animal_nuevo.dart';
-import 'pantalla_evento.dart';
+import 'pantalla_animal.dart';
 
 class PantallaHato extends StatefulWidget {
   final String fincaId;
@@ -93,16 +92,15 @@ class _PantallaHatoState extends State<PantallaHato> {
     }
   }
 
-  Future<void> _registrarCaso(Animal animal) async {
+  Future<void> _abrirFicha(Animal animal) async {
     final hubo = await Navigator.of(context).push<bool>(
-      MaterialPageRoute(
-        builder: (_) => PantallaEvento(
-          fincaId: widget.fincaId,
-          animalInicial: animal,
-        ),
-      ),
+      MaterialPageRoute(builder: (_) => PantallaAnimal(animal: animal)),
     );
-    if (hubo == true) _huboCambios = true;
+    if (hubo == true) {
+      _huboCambios = true;
+      // Un parto o un secado cambian la categoria que muestra la lista.
+      _cargar();
+    }
   }
 
   @override
@@ -167,7 +165,7 @@ class _PantallaHatoState extends State<PantallaHato> {
 
   Widget _fila(Animal a) {
     return InkWell(
-      onTap: () => _registrarCaso(a),
+      onTap: () => _abrirFicha(a),
       child: Container(
         constraints: const BoxConstraints(minHeight: Medida.toque),
         padding: const EdgeInsets.symmetric(

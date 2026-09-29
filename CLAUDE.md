@@ -107,8 +107,10 @@ lib/
 │   ├── db/      app_database.dart — conexión y migraciones
 │   ├── models/  un archivo por entidad
 │   └── dao/     un archivo por entidad; TODO el SQL vive aquí
-└── ui/          pantallas
+└── ui/          pantallas; comunes.dart tiene las piezas repetidas
 ```
+
+Los botones de opción, la fila de fecha, el contador de ±1 y las respuestas a "¿cuándo empezó?" viven en `ui/comunes.dart`. Una pantalla nueva los usa de ahí: si cada una tuviera su copia, "Esta mañana" terminaría significando cosas distintas en dos formularios.
 
 Ninguna pantalla ejecuta SQL directamente. Si hace falta una consulta nueva, va en el DAO correspondiente.
 
@@ -152,7 +154,7 @@ Se puede guardar incompleto. Un registro a medias es infinitamente mejor que nin
 
 ```bash
 flutter analyze --fatal-infos    # sin advertencias, ni siquiera sugerencias
-flutter test                     # las 44 pruebas en verde
+flutter test                     # las 52 pruebas en verde
 ```
 
 Toda consulta SQL nueva con lógica no trivial necesita su prueba en `test/dao_test.dart`. El patrón está en las pruebas existentes: fecha fija (`fechaBase`), base en memoria, un caso que debe pasar y uno que no.
@@ -165,7 +167,7 @@ Las pantallas nuevas llevan su prueba en `test/pantallas_test.dart`. Toda operac
 
 **`UPSERT` requiere Android 10 o superior.** `ProduccionDao.guardar()` usa `ON CONFLICT DO UPDATE`, que necesita SQLite 3.24. Android 9 trae 3.22 y falla. Pendiente confirmar la versión del teléfono de Jhon.
 
-**Compilado y probado** con Flutter 3.35.0 el 29 de septiembre de 2026: `flutter analyze --fatal-infos` limpio y 44 pruebas en verde. El APK todavía no se ha compilado (lo hace el CI al subir el proyecto).
+**Compilado y probado** con Flutter 3.35.0 el 29 de septiembre de 2026: `flutter analyze --fatal-infos` limpio y 52 pruebas en verde. El APK todavía no se ha compilado (lo hace el CI al subir el proyecto).
 
 **Firma con clave de depuración.** Cambiar a una clave propia después de que Jhon instale obligaría a desinstalar, y eso borra la base de datos.
 

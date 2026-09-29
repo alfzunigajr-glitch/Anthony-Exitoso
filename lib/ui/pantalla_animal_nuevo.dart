@@ -26,6 +26,7 @@ import 'package:flutter/material.dart';
 import '../core/tema.dart';
 import '../data/dao/animal_dao.dart';
 import '../data/models/animal.dart';
+import 'comunes.dart';
 
 class PantallaAnimalNuevo extends StatefulWidget {
   final String fincaId;
@@ -235,7 +236,7 @@ class _PantallaAnimalNuevoState extends State<PantallaAnimalNuevo> {
         Row(
           children: [
             Expanded(
-              child: _Opcion(
+              child: Opcion(
                 texto: 'Hembra',
                 elegida: _sexo == Sexo.hembra,
                 onTap: () => _elegirSexo(Sexo.hembra),
@@ -243,7 +244,7 @@ class _PantallaAnimalNuevoState extends State<PantallaAnimalNuevo> {
             ),
             const SizedBox(width: Medida.sm),
             Expanded(
-              child: _Opcion(
+              child: Opcion(
                 texto: 'Macho',
                 elegida: _sexo == Sexo.macho,
                 onTap: () => _elegirSexo(Sexo.macho),
@@ -285,7 +286,7 @@ class _PantallaAnimalNuevoState extends State<PantallaAnimalNuevo> {
                 for (final c in CategoriaAnimal.paraSexo(_sexo!))
                   SizedBox(
                     width: ancho,
-                    child: _Opcion(
+                    child: Opcion(
                       texto: CategoriaAnimal.etiqueta(c),
                       elegida: _categoria == c,
                       onTap: () => setState(() => _categoria = c),
@@ -300,9 +301,9 @@ class _PantallaAnimalNuevoState extends State<PantallaAnimalNuevo> {
   }
 
   Widget _seccionIngreso() {
-    return _FilaFecha(
+    return FilaFecha(
       etiqueta: 'Llegó a la finca',
-      valor: _fechaCorta(_fechaIngreso),
+      valor: fechaCorta(_fechaIngreso),
       onTap: () => _elegirFecha(ingreso: true),
     );
   }
@@ -363,11 +364,11 @@ class _PantallaAnimalNuevoState extends State<PantallaAnimalNuevo> {
         ),
         const SizedBox(height: Medida.lg),
 
-        _FilaFecha(
+        FilaFecha(
           etiqueta: 'Nacimiento',
           valor: _fechaNacimiento == null
               ? 'Sin dato'
-              : _fechaCorta(_fechaNacimiento!),
+              : fechaCorta(_fechaNacimiento!),
           onTap: () => _elegirFecha(ingreso: false),
         ),
 
@@ -417,99 +418,4 @@ class _PantallaAnimalNuevoState extends State<PantallaAnimalNuevo> {
       ),
     );
   }
-}
-
-// =============================================================================
-//  PIEZAS
-// =============================================================================
-
-/// Boton de eleccion grande, con el mismo aspecto que los de pantalla_evento.
-class _Opcion extends StatelessWidget {
-  final String texto;
-  final bool elegida;
-  final VoidCallback onTap;
-
-  const _Opcion({
-    required this.texto,
-    required this.elegida,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(Medida.bordeRadio),
-      child: Container(
-        height: Medida.toque,
-        alignment: Alignment.center,
-        padding: const EdgeInsets.symmetric(horizontal: Medida.sm),
-        decoration: BoxDecoration(
-          color: elegida ? Colores.primario : Colores.superficieAlta,
-          borderRadius: BorderRadius.circular(Medida.bordeRadio),
-          border: Border.all(
-            color: elegida ? Colores.primario : Colores.borde,
-            width: elegida ? 2 : 1,
-          ),
-        ),
-        child: Text(
-          texto,
-          textAlign: TextAlign.center,
-          style: Tipo.cuerpo.copyWith(
-            color: elegida ? Colors.white : Colores.tinta,
-            fontWeight: elegida ? FontWeight.w600 : FontWeight.w400,
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-/// Fila tocable que muestra una fecha y abre el calendario.
-class _FilaFecha extends StatelessWidget {
-  final String etiqueta;
-  final String valor;
-  final VoidCallback onTap;
-
-  const _FilaFecha({
-    required this.etiqueta,
-    required this.valor,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(Medida.bordeRadio),
-      child: Container(
-        height: Medida.toque,
-        padding: const EdgeInsets.symmetric(horizontal: Medida.md),
-        decoration: BoxDecoration(
-          color: Colores.superficieAlta,
-          borderRadius: BorderRadius.circular(Medida.bordeRadio),
-          border: Border.all(color: Colores.borde),
-        ),
-        child: Row(
-          children: [
-            Expanded(child: Text(etiqueta, style: Tipo.cuerpoSuave)),
-            Text(valor, style: Tipo.cuerpo),
-            const SizedBox(width: Medida.sm),
-            const Icon(Icons.calendar_today_outlined,
-                size: 20, color: Colores.tintaSuave),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-/// Fecha legible: '12 jun 2026'. Se arma a mano porque DateFormat de intl
-/// necesita cargar los datos del idioma al arrancar la app solo para esto.
-String _fechaCorta(DateTime f) {
-  const meses = [
-    'ene', 'feb', 'mar', 'abr', 'may', 'jun',
-    'jul', 'ago', 'sep', 'oct', 'nov', 'dic',
-  ];
-  return '${f.day} ${meses[f.month - 1]} ${f.year}';
 }

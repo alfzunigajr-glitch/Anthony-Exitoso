@@ -13,11 +13,17 @@ Leer `CLAUDE.md` antes que esto: contiene las reglas que no se negocian.
 | Protección anti-duplicación | Verificada con pruebas |
 | Modelos (9) | Compilados |
 | DAOs (5) | Compilados y probados |
-| Pruebas (44) | En verde (Flutter 3.35.0) |
+| Pruebas (52) | En verde (Flutter 3.35.0) |
 | `pantalla_inicio` | Escrita; enlaza al hato y avisa si está vacío |
 | `pantalla_evento` | Escrita y probada en navegador |
 | `pantalla_animal_nuevo` (T1) | Hecha, con pruebas |
 | `pantalla_hato` (T2) | Hecha, con pruebas |
+| `pantalla_animal` (T3) | Hecha, con pruebas |
+| `pantalla_tratamiento` (T4) | Hecha, con pruebas |
+| `pantalla_produccion` (T5) | Hecha, con pruebas |
+| `pantalla_por_completar` + `pantalla_completar_evento` (T6) | Hechas, con pruebas |
+| `pantalla_repro` (T8) | Hecha, con pruebas |
+| Respaldo (T7) | **Pendiente** |
 | Tema y tokens de diseño | Escritos |
 | CI en GitHub Actions | Configurado |
 
@@ -27,7 +33,9 @@ Leer `CLAUDE.md` antes que esto: contiene las reglas que no se negocian.
 
 ~~No hay forma de dar de alta un animal.~~ Resuelto con T1 y T2: el hato se carga desde el botón **Hato** de la pantalla de inicio, que además avisa cuando el hato está vacío.
 
-**Sigue abierto el problema hermano:** `pantalla_inicio` muestra bloques de retiro de leche y caídas de producción, pero no existe ninguna pantalla que cree tratamientos ni registros de producción. Esos bloques van a estar siempre vacíos hasta que se construyan sus formularios.
+~~Problema hermano~~ resuelto con T4 y T5: tratamientos y ordeño ya se registran, así que los bloques de retiro y de caídas del inicio se llenan con datos reales.
+
+Texto original del problema, para contexto: `pantalla_inicio` muestra bloques de retiro de leche y caídas de producción, pero no existe ninguna pantalla que cree tratamientos ni registros de producción. Esos bloques van a estar siempre vacíos hasta que se construyan sus formularios.
 
 ---
 
@@ -51,7 +59,7 @@ Criterios de aceptación:
 
 ### T2 · Lista del hato — HECHO
 
-Mientras no exista la ficha (T3), tocar una fila abre el registro de un caso con ese animal ya elegido.
+Tocar una fila abre la ficha (T3).
 
 `lib/ui/pantalla_hato.dart`
 
@@ -64,7 +72,9 @@ Criterios de aceptación:
 - Estado vacío con acción: si no hay animales, el texto debe llevar directo a agregar el primero
 - Enlazar desde `pantalla_inicio`
 
-### T3 · Ficha del animal
+### T3 · Ficha del animal — HECHO
+
+Desde cada caso de salud se abre "Completar" (T6) y "Tratamiento" (T4). Las filas de retiro y de caídas del inicio también abren la ficha.
 
 `lib/ui/pantalla_animal.dart`
 
@@ -77,7 +87,7 @@ Criterios de aceptación:
 - Botón para registrar caso, con el animal ya preseleccionado
 - Los eventos que no sirven para entrenar se marcan con `EventoSalud.motivoNoSirve` y se pueden completar tocándolos
 
-### T4 · Registrar tratamiento
+### T4 · Registrar tratamiento — HECHO
 
 `lib/ui/pantalla_tratamiento.dart`
 
@@ -90,7 +100,9 @@ Criterios de aceptación:
 - Llamar `TratamientoDao.crear()`
 - Tras guardar, si hay retiro de leche, confirmarlo en pantalla con la fecha hasta la que no se puede entregar
 
-### T5 · Captura de producción
+### T5 · Captura de producción — HECHO
+
+El contador "Faltan N" se calcula en pantalla con la misma regla que `ProduccionDao.faltantes()` (vacas en ordeño sin litros), para que baje a medida que se digita. Reabrir un ordeño muestra lo ya anotado (`ProduccionDao.delOrdenio()`). Acepta coma decimal y marca para revisar valores fuera de 0–80 L.
 
 `lib/ui/pantalla_produccion.dart`
 
@@ -104,7 +116,9 @@ Criterios de aceptación:
 - Teclado numérico con decimales
 - Avanzar al siguiente campo con la tecla "siguiente" del teclado, sin tocar la pantalla
 
-### T6 · Por completar
+### T6 · Por completar — HECHO
+
+Al completar, "¿cuándo empezó?" se cuenta desde la detección, no desde hoy. `EventoSaludDao.completar()` nunca toca `ts_deteccion_humana` ni `ts_registro`.
 
 `lib/ui/pantalla_por_completar.dart`
 
@@ -128,7 +142,9 @@ Criterios de aceptación:
 - Mostrar cuándo fue el último respaldo
 - Avisar si pasaron más de 7 días sin respaldar
 
-### T8 · Eventos reproductivos
+### T8 · Eventos reproductivos — HECHO
+
+Un parto pasa la vaca a "Vaca en ordeño" y un secado a "Vaca seca", para que la captura de producción siga al ciclo sin cambios a mano. Sin opción "No lo sé": `ts_evento` es obligatorio.
 
 `lib/ui/pantalla_repro.dart`
 

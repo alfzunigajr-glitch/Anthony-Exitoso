@@ -149,6 +149,35 @@ class ProduccionDao {
     return filas.map(ProduccionLeche.desdeFila).toList();
   }
 
+  /// Litros ya registrados de un ordenio, por animal.
+  ///
+  /// Sirve para que la pantalla de captura muestre lo que ya se anoto al
+  /// volver a abrirla: sin esto, reabrir el ordenio a medias mostraria todo
+  /// vacio y la persona volveria a digitar (o creeria que se perdio).
+  Future<Map<String, double>> delOrdenio({
+    required String fincaId,
+    required DateTime fecha,
+    required int ordenio,
+  }) async {
+    final db = await _db;
+
+    final filas = await db.rawQuery('''
+      SELECT p.animal_id, p.litros
+      FROM produccion_leche p
+      JOIN animal a ON a.id = p.animal_id
+      WHERE a.finca_id = ?
+        AND p.fecha = ?
+        AND p.ordenio = ?
+        AND p.eliminado = 0
+        AND a.eliminado = 0
+    ''', [fincaId, aFecha(fecha), ordenio]);
+
+    return {
+      for (final f in filas)
+        f['animal_id'] as String: (f['litros'] as num).toDouble(),
+    };
+  }
+
   /// Produccion total de la finca en un dia.
   Future<double> totalDelDia(String fincaId, DateTime fecha) async {
     final db = await _db;

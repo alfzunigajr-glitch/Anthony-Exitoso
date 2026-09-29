@@ -53,6 +53,46 @@ class MetodoDeteccionCelo {
   static const sensor    = 'SENSOR';   // Reservado para la Fase 3
 
   static const todos = [visual, monta, parche, podometro, sensor];
+
+  /// Los que una persona puede elegir hoy. SENSOR queda fuera: lo escribira
+  /// el collar en la Fase 3, nunca una persona.
+  static const manuales = [visual, monta, parche, podometro];
+
+  static String nombre(String metodo) {
+    switch (metodo) {
+      case visual:
+        return 'Observación';
+      case monta:
+        return 'Se deja montar';
+      case parche:
+        return 'Parche detector';
+      case podometro:
+        return 'Podómetro';
+      case sensor:
+        return 'Collar';
+      default:
+        return metodo;
+    }
+  }
+}
+
+/// Tipo de servicio (columna `servicio_tipo`).
+class TipoServicio {
+  static const montaNatural = 'MONTA_NATURAL';
+  static const ia = 'IA';
+
+  static const todos = [montaNatural, ia];
+
+  static String nombre(String tipo) {
+    switch (tipo) {
+      case montaNatural:
+        return 'Monta natural';
+      case ia:
+        return 'Inseminación';
+      default:
+        return tipo;
+    }
+  }
 }
 
 /// Resultado de una palpación.
@@ -62,6 +102,39 @@ class ResultadoPalpacion {
   static const dudosa   = 'DUDOSA';
 
   static const todos = [preniada, vacia, dudosa];
+
+  static String nombre(String resultado) {
+    switch (resultado) {
+      case preniada:
+        return 'Preñada';
+      case vacia:
+        return 'Vacía';
+      case dudosa:
+        return 'Dudosa';
+      default:
+        return resultado;
+    }
+  }
+}
+
+/// Escala de dificultad de parto (columna `dificultad_parto`, 1 a 4).
+class DificultadParto {
+  static const todas = [1, 2, 3, 4];
+
+  static String nombre(int valor) {
+    switch (valor) {
+      case 1:
+        return 'Sin ayuda';
+      case 2:
+        return 'Ayuda leve';
+      case 3:
+        return 'Ayuda fuerte';
+      case 4:
+        return 'Veterinario';
+      default:
+        return '$valor';
+    }
+  }
 }
 
 class EventoReproductivo {
