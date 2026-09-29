@@ -40,6 +40,13 @@ dependencies:
   # llenaría la base de formatos distintos en la misma columna.
   intl: ^0.20.2
 
+  # ---- Version web de prueba -----------------------------------------------
+  # sqflite_common_ffi_web: SQLite compilado a WebAssembly, para la version
+  # que corre en el navegador (lib/main_web.dart, publicada en Railway).
+  # El APK no lo usa: main.dart nunca lo importa, asi que no entra en el
+  # telefono.
+  sqflite_common_ffi_web: ^1.0.2
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

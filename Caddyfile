@@ -1,0 +1,13 @@
+# Servidor de archivos de la version web. Railway asigna el puerto en la
+# variable PORT; fuera de Railway se usa el 8080.
+:{$PORT:8080} {
+	root * /srv
+	encode zstd gzip
+
+	# index.html y el arranque nunca se guardan en cache: asi, despues de cada
+	# despliegue el navegador pide la version nueva en vez de mostrar la vieja.
+	@arranque path / /index.html /flutter_bootstrap.js
+	header @arranque Cache-Control "no-cache"
+
+	file_server
+}

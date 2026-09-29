@@ -16,6 +16,8 @@
 .pub/
 build/
 *.lock.bak
+.flutter-plugins
+.flutter-plugins-dependencies
 
 # pubspec.lock SI se sube en aplicaciones (no en paquetes). Fija las versiones
 # exactas de las dependencias, asi que el APK que compila GitHub usa las mismas
@@ -64,3 +66,8 @@ ios/Flutter/Flutter.podspec
 *.db-journal
 *.db-wal
 respaldo_*.db
+
+# ---- Version web --------------------------------------------------------------
+# Los genera `dart run sqflite_common_ffi_web:setup` al compilar (Dockerfile).
+web/sqlite3.wasm
+web/sqflite_sw.js

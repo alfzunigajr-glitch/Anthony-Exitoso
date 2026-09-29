@@ -173,6 +173,12 @@ Las pantallas nuevas llevan su prueba en `test/pantallas_test.dart`. Toda operac
 
 ---
 
+## Versión web de prueba
+
+`lib/main_web.dart` + `web/` + `Dockerfile` publican la app en Railway para revisar la interfaz desde cualquier lado (`docs/despliegue.md`). Cada navegador guarda su propia base y arranca con datos de ejemplo: **no es para datos reales**. Nada de esto entra en el APK; `main.dart` no lo importa.
+
+---
+
 ## Qué falta
 
 Ver `docs/alcance.md` para el detalle con criterios de aceptación.

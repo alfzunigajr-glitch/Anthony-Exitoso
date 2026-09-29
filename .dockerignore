@@ -1,0 +1,12 @@
+# Lo que no hace falta mandar a Railway para compilar. Se regenera adentro.
+.git/
+.dart_tool/
+build/
+android/
+ios/
+web/sqlite3.wasm
+web/sqflite_sw.js
+*.jks
+*.keystore
+android/key.properties
+*.db

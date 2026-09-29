@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <!-- flutter build reemplaza esto por el valor de --base-href (por defecto /). -->
+  <base href="$FLUTTER_BASE_HREF">
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="description" content="Registro sanitario del hato. Versión de prueba en el navegador.">
+  <meta name="theme-color" content="#1F5D3F">
+
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Hato">
+  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+  <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="manifest" href="manifest.json">
+
+  <title>Registro del hato</title>
+
+  <!--
+    Barra fina arriba que dice que esto es una prueba; la app ocupa el resto.
+    En pantallas anchas la app va en un marco del ancho de un telefono: es
+    una app pensada para el celular, y estirada a 1400 px no se juzga bien.
+  -->
+  <style>
+    :root {
+      --bg: #e9ece6; --bar: #fbfbf9; --ink: #16211c; --muted: #5a6560;
+      --line: #d3d7cf; --accent: #1f5d3f; --amber-bg: #fbf0dc; --amber: #8a5300;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #121814; --bar: #1a211d; --ink: #e2e9e4; --muted: #9aa6a0;
+        --line: #2d3832; --accent: #7fc49c; --amber-bg: #3a2c12; --amber: #f0c270;
+        color-scheme: dark;
+      }
+    }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; margin: 0; }
+    body {
+      background: var(--bg); color: var(--ink);
+      font: 14px/1.4 "Segoe UI", Roboto, system-ui, sans-serif;
+      display: flex; flex-direction: column;
+      padding-top: env(safe-area-inset-top, 0px);
+    }
+    .bar {
+      display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+      padding: 10px 16px; background: var(--bar); border-bottom: 1px solid var(--line);
+    }
+    .bar strong { font-size: 15px; }
+    .pill {
+      font-size: 12px; font-weight: 600; padding: 4px 8px; border-radius: 999px;
+      background: var(--amber-bg); color: var(--amber);
+    }
+    .hint { color: var(--muted); font-size: 13px; flex: 1 1 220px; min-width: 0; }
+    .reset {
+      font: 600 13px "Segoe UI", Roboto, system-ui, sans-serif; padding: 7px 12px;
+      border-radius: 8px; border: 1px solid var(--line); background: transparent;
+      color: var(--ink); cursor: pointer;
+    }
+    .reset:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .reset[data-confirm="1"] { background: var(--amber-bg); color: var(--amber); border-color: var(--amber); }
+    .stage { flex: 1; min-height: 0; display: flex; justify-content: center; }
+    #app { position: relative; width: 100%; height: 100%; background: #fbfbf9; }
+    #carga {
+      position: absolute; inset: 0; display: grid; place-content: center; gap: 10px;
+      text-align: center; color: #5a6560; font-size: 15px;
+    }
+    #carga .spin {
+      width: 28px; height: 28px; margin: 0 auto; border: 3px solid #e3ede7;
+      border-top-color: #1f5d3f; border-radius: 50%; animation: g 0.9s linear infinite;
+    }
+    @keyframes g { to { transform: rotate(360deg); } }
+    @media (prefers-reduced-motion: reduce) { #carga .spin { animation: none; } }
+    @media (min-width: 700px) {
+      .stage { padding: 20px 0; }
+      #app {
+        max-width: 412px; border-radius: 22px; overflow: hidden;
+        border: 1px solid var(--line); box-shadow: 0 10px 30px rgb(0 0 0 / 0.12);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="bar">
+    <strong>Registro del hato</strong>
+    <span class="pill">Datos de ejemplo</span>
+    <span class="hint">Versión de prueba. Lo que registres se guarda solo en este navegador.</span>
+    <button class="reset" id="reset" type="button">Empezar de cero</button>
+  </div>
+  <div class="stage">
+    <div id="app"><div id="carga"><div class="spin"></div><div>Abriendo la app…</div></div></div>
+  </div>
+
+  <script>
+    // "Empezar de cero" borra la base del navegador y recarga: la app vuelve a
+    // cargar los datos de ejemplo. Pide un segundo toque para no borrar por
+    // accidente lo que se estaba probando.
+    (function () {
+      var btn = document.getElementById("reset");
+      var armado = false;
+      btn.addEventListener("click", function () {
+        if (!armado) {
+          armado = true;
+          btn.dataset.confirm = "1";
+          btn.textContent = "¿Borrar tus registros? Toca otra vez";
+          setTimeout(function () {
+            armado = false; btn.dataset.confirm = ""; btn.textContent = "Empezar de cero";
+          }, 4000);
+          return;
+        }
+        btn.textContent = "Borrando…";
+        try {
+          var req = indexedDB.deleteDatabase("sqflite_databases");
+          req.onsuccess = req.onerror = req.onblocked = function () { location.reload(); };
+        } catch (e) { location.reload(); }
+      });
+    })();
+  </script>
+  <script src="flutter_bootstrap.js" async></script>
+</body>
+</html>

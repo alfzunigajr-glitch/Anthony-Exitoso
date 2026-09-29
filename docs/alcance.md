@@ -163,7 +163,7 @@ No construir sin discutirlo. El código escrito hoy contra hardware que no exist
 - DAOs de `dispositivo`, `asignacion_dispositivo`, `observacion_conductual`
 - Cualquier cosa de Bluetooth o LoRa
 - Sincronización con servidor o nube
-- Versión web
+- Versión web **para uso real**. Existe una versión web de prueba en Railway (`docs/despliegue.md`) solo para revisar la interfaz: guarda en el navegador y carga datos de ejemplo
 - Integración con el arete oficial de Agrocalidad / SIFAE
 - Multiusuario
 
