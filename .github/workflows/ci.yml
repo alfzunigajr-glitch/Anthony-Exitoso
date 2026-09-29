@@ -1,0 +1,116 @@
+# =============================================================================
+#  .github/workflows/ci.yml
+#
+#  Se ejecuta en los servidores de GitHub cada vez que subes codigo.
+#  Hace dos cosas:
+#    1. Corre las pruebas. Si alguna falla, se detiene y te avisa.
+#    2. Compila el APK y lo deja listo para descargar.
+#
+#  POR QUE VALE LA PENA:
+#  el APK sale de una maquina limpia, con la misma version de Flutter siempre.
+#  Se acaba el "en mi computador funcionaba". Y no dependes de que tu Windows
+#  este bien configurado para poder mandarle una version a Jhon.
+# =============================================================================
+
+name: Pruebas y APK
+
+# Cuando se ejecuta.
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+  # workflow_dispatch agrega un boton en la pestania Actions para lanzarlo a
+  # mano. Util cuando quieres un APK sin haber cambiado nada del codigo.
+  workflow_dispatch:
+
+# Variable compartida por los dos trabajos. Fijar la version exacta evita que
+# una actualizacion de Flutter rompa la compilacion de un dia para otro sin que
+# hayas tocado nada.
+env:
+  FLUTTER_VERSION: '3.35.0'
+
+jobs:
+
+  # ===========================================================================
+  #  1. PRUEBAS
+  #     Corre primero y es rapido (menos de dos minutos). Si falla, el APK ni
+  #     se intenta: no tiene sentido generar una version rota.
+  # ===========================================================================
+  pruebas:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Descarga tu codigo al servidor.
+      - uses: actions/checkout@v4
+
+      - name: Instalar Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          # Guarda Flutter en cache entre ejecuciones. Sin esto, cada push
+          # perderia dos minutos volviendo a descargarlo.
+          cache: true
+
+      - name: Descargar dependencias
+        run: flutter pub get
+
+      # Revisa errores de tipo y advertencias antes de compilar.
+      # --fatal-infos hace que incluso las sugerencias detengan el proceso:
+      # es estricto a proposito, para que el codigo no se degrade con el tiempo.
+      - name: Analizar el codigo
+        run: flutter analyze --fatal-infos
+
+      - name: Correr las pruebas
+        run: flutter test
+
+  # ===========================================================================
+  #  2. APK
+  #     Solo corre si las pruebas pasaron.
+  # ===========================================================================
+  apk:
+    runs-on: ubuntu-latest
+
+    # needs establece la dependencia: este trabajo espera a que 'pruebas'
+    # termine bien. Si fallo, se salta.
+    needs: pruebas
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # Gradle necesita Java. La 17 es la que pide el Android Gradle Plugin
+      # actual; con la 11 falla y con la 21 puede dar avisos.
+      - name: Instalar Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Instalar Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+
+      - name: Descargar dependencias
+        run: flutter pub get
+
+      - name: Compilar APK
+        run: flutter build apk --release
+
+      # Sube el APK como "artifact": queda descargable desde la pagina de la
+      # ejecucion en la pestania Actions. De ahi lo bajas y se lo mandas a Jhon.
+      - name: Publicar el APK
+        uses: actions/upload-artifact@v4
+        with:
+          # El nombre incluye el numero de ejecucion para distinguir versiones.
+          name: app-ganado-${{ github.run_number }}
+          path: build/app/outputs/flutter-apk/app-release.apk
+
+          # GitHub borra los artifacts pasado este plazo. 90 dias es el maximo
+          # del plan gratuito y sobra: para guardar una version de verdad se
+          # usa un Release, no un artifact.
+          retention-days: 90

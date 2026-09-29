@@ -1,0 +1,66 @@
+# =============================================================================
+#  .gitignore
+#  Archivos que NO deben subirse al repositorio.
+#
+#  Dos categorias:
+#   - Generados: se recrean solos con `flutter pub get` o al compilar. Subirlos
+#     llena el historial de ruido y provoca conflictos constantes.
+#   - Secretos: claves de firma. Si suben una vez, quedan en el historial de
+#     git para siempre aunque las borres despues.
+# =============================================================================
+
+# ---- Flutter y Dart ---------------------------------------------------------
+.dart_tool/
+.packages
+.pub-cache/
+.pub/
+build/
+*.lock.bak
+
+# pubspec.lock SI se sube en aplicaciones (no en paquetes). Fija las versiones
+# exactas de las dependencias, asi que el APK que compila GitHub usa las mismas
+# que tu computador. Sin el, una actualizacion de cualquier paquete podria
+# cambiar el comportamiento sin que tocaras nada.
+!pubspec.lock
+
+# ---- Editores ---------------------------------------------------------------
+.idea/
+.vscode/
+*.iml
+*.swp
+.DS_Store
+Thumbs.db
+
+# ---- Android ----------------------------------------------------------------
+android/.gradle/
+android/captures/
+android/local.properties
+android/app/debug/
+android/app/profile/
+android/app/release/
+
+# ---- FIRMA DE LA APP  <-- NUNCA SUBIR --------------------------------------
+# key.properties guarda las contrasenias en texto plano.
+# El .jks es la clave con la que se firma la app: quien la tenga puede publicar
+# actualizaciones haciendose pasar por ti.
+#
+# Guarda ambos en un respaldo aparte (gestor de contrasenias o disco externo).
+# Si se pierden, no se pueden regenerar: habria que publicar la app como si
+# fuera nueva, y Jhon tendria que desinstalar y perder todos los datos.
+android/key.properties
+*.jks
+*.keystore
+
+# ---- iOS (por si algun dia) -------------------------------------------------
+ios/Pods/
+ios/.symlinks/
+ios/Flutter/Flutter.framework
+ios/Flutter/Flutter.podspec
+
+# ---- Bases de datos locales -------------------------------------------------
+# Respaldos que bajes con adb durante las pruebas. Pueden traer datos reales
+# de la finca de Jhon, y esos no van a un repositorio.
+*.db
+*.db-journal
+*.db-wal
+respaldo_*.db
